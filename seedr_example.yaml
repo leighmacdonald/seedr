@@ -1,0 +1,26 @@
+log:
+  level: debug
+  log_colour: true
+
+client:
+  type: deluge
+  host: 10.0.0.10
+  port: 58846
+  user: username
+  password: password
+
+general:
+  update_interval: 5s
+  stat_interval: 1s
+  dry_run_mode: false
+
+paths:
+  - path: /downloads_ssd
+    priority: 10
+    max_used: 90
+    max_ratio: 2.0
+  - path: /downloads_hdd
+    priority: 5
+    max_used: 90
+    max_ratio: -1
+
