@@ -11,6 +11,7 @@ var (
 	drivers            map[string]DriverFactory
 	driversMu          *sync.RWMutex
 	ErrInvalidDriver   = errors.New("Invalid driver")
+	ErrUnknownTorrent  = errors.New("Unknown torrent")
 	ErrDuplicateDriver = errors.New("Duplicate driver name")
 	ErrAuthFailed      = errors.New("Authentication failed")
 	ErrDriverError     = errors.New("Backend driver error")

@@ -10,10 +10,10 @@ you can automatically move it to a slower tier (HDD) storage when certain thresh
 or a combination of several, are met.   
 
 - [ ] **Client support**
-    - [x] Deluge (Via built in RPC interface, not the WebUI plugin)
+    - [x] Deluge 2.x (Via built in RPC interface, WebUI plugin not required)
     - [ ] Transmission
     - [ ] rTorrent
-    - [ ] qBittorrent
+    - [ ] qBittorrent v4+
     
 - [ ] **Triggers** These are the different strategies employed to decide if a torrent should be moved
     - [ ] Max Ratio
