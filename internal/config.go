@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"github.com/leighmacdonald/seedr/pkg/client"
 	"github.com/mitchellh/go-homedir"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -14,12 +15,6 @@ var (
 	ErrInvalidConfig = errors.New("Invalid configuration")
 )
 
-type clientType string
-
-const (
-	deluge clientType = "deluge"
-)
-
 type configuration struct {
 	General struct {
 		UpdateInterval string `mapstructure:"update_interval"`
@@ -30,21 +25,15 @@ type configuration struct {
 		Level     string `mapstructure:"level"`
 		LogColour bool   `mapstructure:"log_colour"`
 	} `mapstructure:"log"`
-	Client struct {
-		Type     clientType `mapstructure:"type"`
-		Host     string     `mapstructure:"host"`
-		Port     uint       `mapstructure:"port"`
-		User     string     `mapstructure:"user"`
-		Password string     `mapstructure:"password"`
-	} `mapstructure:"client"`
-	Paths []pathConfig `mapstructure:"paths"`
+	Client client.Config `mapstructure:"client"`
+	Paths  []pathConfig  `mapstructure:"paths"`
 }
 
 type pathConfig struct {
 	Path     string  `mapstructure:"path"`
 	Priority int     `mapstructure:"priority"`
 	MaxUsed  float64 `mapstructure:"max_used"`
-	MaxRatio float32 `mapstructure:"max_ratio"`
+	MaxRatio float64 `mapstructure:"max_ratio"`
 }
 
 // Read reads in config file and ENV variables if set.
