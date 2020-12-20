@@ -305,6 +305,8 @@ github.com/kr/text v0.1.0 h1:45sCR5RtlFHMR4UwH9sdQ5TC8v0qDQCHnXt+kaKSTVE=
 github.com/kr/text v0.1.0/go.mod h1:4Jbv+DJW3UT/LiOwJeYQe1efqtUx/iVham/4vfdArNI=
 github.com/leighmacdonald/go-libdeluge v0.5.4 h1:k98dJWhARNf5HE+zHctkOtplss076PJQkEvIXoW/aCY=
 github.com/leighmacdonald/go-libdeluge v0.5.4/go.mod h1:Fxm576GtD2fTcSUCSPqJINBZRkY8WrtGf9JfYVRtmD0=
+github.com/leighmacdonald/go-rtorrent v1.5.1-0.20201220050726-3e0ef1d34434 h1:ECHWZiNjO3dLa8kQC9oSacBh59O8IH53bWCi9qRe24c=
+github.com/leighmacdonald/go-rtorrent v1.5.1-0.20201220050726-3e0ef1d34434/go.mod h1:HLmRYPWHgvj8RzJ4viSNIVYLveERVFOrfKM2AJI5S70=
 github.com/leighmacdonald/golib v1.1.0/go.mod h1:cAKDtUY1YGAwtUtlwGUAb4Z+o62Lw5d8JkeI/6+MCQQ=
 github.com/lucas-clemente/quic-go v0.7.1-0.20190401152353-907071221cf9/go.mod h1:PpMmPfPKO9nKJ/psF49ESTAGQSdfXxlg1otPbEB2nOw=
 github.com/lucas-clemente/quic-go v0.15.6/go.mod h1:Myi1OyS0FOjL3not4BxT7KN29bRkcMUV5JVVFLKtDp8=
@@ -343,8 +345,6 @@ github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421/go.mod h1:6dJ
 github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd/go.mod h1:6dJC0mAP4ikYIbvyc7fijjWJddQyLn8Ig3JB5CqoB9Q=
 github.com/modern-go/reflect2 v0.0.0-20180701023420-4b7aa43c6742/go.mod h1:bx2lNnkwVCuqBIxFjflWJWanXIb3RllmbCylyMrvgv0=
 github.com/modern-go/reflect2 v1.0.1/go.mod h1:bx2lNnkwVCuqBIxFjflWJWanXIb3RllmbCylyMrvgv0=
-github.com/mrobinsn/go-rtorrent v1.5.0 h1:NcIIzPSTy4c5Zxm87jNDDMYmJvkfhpl4y295faLG2L0=
-github.com/mrobinsn/go-rtorrent v1.5.0/go.mod h1:HLmRYPWHgvj8RzJ4viSNIVYLveERVFOrfKM2AJI5S70=
 github.com/mschoch/smat v0.0.0-20160514031455-90eadee771ae/go.mod h1:qAyveg+e4CE+eKJXWVjKXM4ck2QobLqTDytGJbLLhJg=
 github.com/mschoch/smat v0.2.0/go.mod h1:kc9mz7DoBKqDyiRL7VZN8KvXQMWeTaVnttLRXOlotKw=
 github.com/mwitkow/go-conntrack v0.0.0-20161129095857-cc309e4a2223/go.mod h1:qRWi+5nqEBWmkhHvq77mSJWrCKwh8bxhgT7d/eI7P4U=

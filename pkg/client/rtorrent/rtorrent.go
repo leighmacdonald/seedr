@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/leighmacdonald/seedr/pkg/client"
 	"github.com/mrobinsn/go-rtorrent/rtorrent"
+	"github.com/pkg/errors"
+	"io/ioutil"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -14,52 +16,135 @@ const driverName = "rtorrent"
 
 type RTorrent struct {
 	cfg       client.Config
-	conn      *rtorrent.RTorrent
+	c         *rtorrent.RTorrent
 	connected bool
 }
 
 func (d RTorrent) Announce(hash string) error {
-	panic("implement me")
+	log.Debugf("Announce() not implemented")
+	return nil
 }
 
 func (d RTorrent) ClientVersion() (string, error) {
-	panic("implement me")
+	name, err := d.c.Name()
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("rtorrent %s", name), nil
 }
 
 func (d RTorrent) Close() error {
-	panic("implement me")
+	return nil
 }
 
 func (d RTorrent) Pause(hash string) error {
-	panic("implement me")
+	log.Debugf("Pause() not implemented")
+	return nil
 }
 
 func (d RTorrent) PauseAll() error {
-	panic("implement me")
+	log.Debugf("Pause() not implemented")
+	return nil
 }
 
 func (d RTorrent) Queue(hash string, position client.QueuePos) error {
-	panic("implement me")
+	log.Debugf("Queue() not implemented")
+	return nil
 }
 
 func (d RTorrent) Start(hash string) error {
-	panic("implement me")
+	log.Debugf("Start() not implemented")
+	return nil
 }
 
 func (d RTorrent) StartAll() error {
-	panic("implement me")
+	log.Debugf("StartAll() not implemented")
+	return nil
 }
 
 func (d RTorrent) Stop(hash string) error {
-	panic("implement me")
+	log.Debugf("Stop() not implemented")
+	return nil
+}
+
+// https://github.com/Novik/ruTorrent/blob/44d43229f07212f20b53b6301fb25882125876c3/plugins/httprpc/action.php#L90
+const (
+	DStop      rtorrent.Field = "d.stop"
+	DClose     rtorrent.Field = "d.close"
+	DStart     rtorrent.Field = "d.start"
+	DOpen      rtorrent.Field = "d.open"
+	DDownTotal rtorrent.Field = "d.down.total"
+	DDownRate  rtorrent.Field = "d.down.rate"
+	DUPTotal   rtorrent.Field = "d.up.total"
+	DUPRate    rtorrent.Field = "d.up.rate"
+	DUpTotal   rtorrent.Field = "d.get_up_total"
+	DSeeders   rtorrent.Field = "d.get_peers_complete"
+	DLeechers  rtorrent.Field = "d.get_peers_connected"
+	// States
+	DHashChecking rtorrent.Field = "d.is_hash_checking"
+	DPriority     rtorrent.Field = "d.get_priority"
+
+	DIsActive     rtorrent.Field = "d.is_active"
+	DFreeSpace    rtorrent.Field = "d.get_free_diskspace"
+	DCreationDate rtorrent.Field = "d.get_creation_date"
+	DState        rtorrent.Field = "d.get_state"
+	DMessage      rtorrent.Field = "d.get_message"
+
+	// Use custom1 for labels
+	DSetLabel rtorrent.Field = "d.set_custom1"
+	DGetLabel rtorrent.Field = "d.get_custom1"
+
+	DVerify rtorrent.Field = "d.check_hash"
+)
+
+func (d RTorrent) GetTorrents(view rtorrent.View) ([]rtorrent.Torrent, error) {
+	args := []interface{}{"", string(view),
+		rtorrent.DName.Query(),
+		rtorrent.DSizeInBytes.Query(),
+		rtorrent.DHash.Query(),
+		rtorrent.DLabel.Query(),
+		rtorrent.DBasePath.Query(),
+		rtorrent.DIsActive.Query(),
+		rtorrent.DComplete.Query(),
+		rtorrent.DRatio.Query(),
+	}
+	results, err := d.c.XMLPRCClient().Call("d.multicall2", args...)
+	var torrents []rtorrent.Torrent
+	if err != nil {
+		return torrents, errors.Wrap(err, "d.multicall2 XMLRPC call failed")
+	}
+	for _, outerResult := range results.([]interface{}) {
+		for _, innerResult := range outerResult.([]interface{}) {
+			torrentData := innerResult.([]interface{})
+			torrents = append(torrents, rtorrent.Torrent{
+				Hash:      torrentData[2].(string),
+				Name:      torrentData[0].(string),
+				Path:      torrentData[4].(string),
+				Size:      torrentData[1].(int),
+				Label:     torrentData[3].(string),
+				Completed: torrentData[6].(int) > 0,
+				Ratio:     float64(torrentData[7].(int)) / float64(1000),
+			})
+		}
+	}
+	return torrents, nil
 }
 
 func (d RTorrent) TorrentsWithState(statuses ...client.State) ([]client.Torrent, error) {
-	panic("implement me")
+	rTorrents, err := d.c.GetTorrents(rtorrent.ViewMain)
+	if err != nil {
+		return nil, errors.Wrap(err, "Failed to fetch torrents")
+	}
+	for _, rt := range rTorrents {
+		log.Println(rt)
+	}
+	var torrents []client.Torrent
+	return torrents, nil
 }
 
 func (d RTorrent) Verify(hash string) error {
-	panic("implement me")
+	log.Debugf("Verify() not implemented")
+	return nil
 }
 
 func (d RTorrent) Login() error {
@@ -67,31 +152,23 @@ func (d RTorrent) Login() error {
 		log.Warn("Already connected")
 		return nil
 	}
-	var url string
-	if d.cfg.Username != "" {
-		url = fmt.Sprintf("http://%s:%s@%s:%d/RPC2", d.cfg.Username, d.cfg.Password, d.cfg.Host, d.cfg.Port)
-	} else {
-		url = fmt.Sprintf("http://%s:%d/RPC2", d.cfg.Host, d.cfg.Port)
-	}
-	newConn := rtorrent.New(url, true)
-	name, err := newConn.Name()
+	name, err := d.c.Name()
 	if err != nil {
 		return err
 	}
 	log.Debugf("Connected to rtorrent: %s", name)
-	d.conn = newConn
 	d.connected = true
 	return nil
 }
 
 func (d RTorrent) Torrents() ([]client.Torrent, error) {
-	rt, err := d.conn.GetTorrents(rtorrent.ViewMain)
+	rt, err := d.c.GetTorrents(rtorrent.ViewMain)
 	if err != nil {
 		return nil, err
 	}
 	var torrents []client.Torrent
 	for _, t := range rt {
-		status, err := d.conn.GetStatus(t)
+		status, err := d.c.GetStatus(t)
 		if err != nil {
 			log.Warnf("Failed to get status for torrent: %v", err)
 			continue
@@ -131,13 +208,34 @@ func (d RTorrent) Remove(hash string, deleteData bool) error {
 }
 
 func (d RTorrent) Add(name string, torrent io.Reader, path string, label string) error {
-	panic("implement me")
+	b, err := ioutil.ReadAll(torrent)
+	if err != nil {
+		return err
+	}
+	if err := d.c.AddTorrent(b,
+		rtorrent.DName.SetValue(name),
+		rtorrent.DLabel.SetValue(label),
+		rtorrent.DBasePath.SetValue(path)); err != nil {
+		return err
+	}
+	return nil
 }
 
 type Factory struct{}
 
 func (f Factory) New(cfg client.Config) (client.Driver, error) {
-	return RTorrent{cfg: cfg}, nil
+	var url string
+	login := ""
+	if cfg.Username != "" && cfg.Password != "" {
+		login = fmt.Sprintf("%s:%s@", cfg.Username, cfg.Password)
+	}
+	if cfg.TLS {
+		url = fmt.Sprintf("https://%s%s:%d/RPC2", login, cfg.Host, cfg.Port)
+	} else {
+		url = fmt.Sprintf("http://%s%s:%d/RPC2", login, cfg.Host, cfg.Port)
+	}
+	c := rtorrent.New(url, cfg.TLS)
+	return RTorrent{cfg: cfg, c: c}, nil
 }
 
 func init() {

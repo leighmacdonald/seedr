@@ -211,7 +211,7 @@ func (driver QBittorrent) Torrents() ([]client.Torrent, error) {
 type Factory struct{}
 
 func (f Factory) New(cfg client.Config) (client.Driver, error) {
-	url := fmt.Sprintf("http://%s:%d/api/v2", cfg.Host, cfg.Port)
+	url := fmt.Sprintf("http://%s:%d", cfg.Host, cfg.Port)
 	c := qbittorrent.NewClient(url, log.WithField("component", "QBitTorrent Client"))
 	return QBittorrent{cfg: cfg, qb: c}, nil
 }
