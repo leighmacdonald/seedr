@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestClient(t *testing.T) {
+func TestRTorrent(t *testing.T) {
 	driver, err := Factory{}.New(client.Config{
 		Driver:   driverName,
 		Username: "",

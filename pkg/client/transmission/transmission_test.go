@@ -6,14 +6,14 @@ import (
 	"testing"
 )
 
-func TestQBittorrent(t *testing.T) {
+func TestTransmission(t *testing.T) {
 	f := Factory{}
 	c, err := f.New(client.Config{
 		Driver:   "transmission",
 		Username: "test_user",
 		Password: "test_pass",
 		Host:     "192.168.0.200",
-		Port:     8090,
+		Port:     9091,
 		TLS:      false,
 	})
 	require.NoErrorf(t, err, "failed to create qbittorrent client")

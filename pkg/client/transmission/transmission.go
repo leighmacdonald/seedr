@@ -214,10 +214,12 @@ func (d Transmission) Add(filename string, torrent io.Reader, path string, _ str
 		return err
 	}
 	b64 := base64.StdEncoding.EncodeToString(b)
+	paused := false
 	if _, err := d.client.TorrentAdd(&transmissionrpc.TorrentAddPayload{
+		Paused:      &paused,
 		DownloadDir: &path,
-		Filename:    &filename,
-		MetaInfo:    &b64,
+		//Filename:    &filename,
+		MetaInfo: &b64,
 	}); err != nil {
 		return errors.Wrapf(err, "Failed to upload new torrent")
 	}

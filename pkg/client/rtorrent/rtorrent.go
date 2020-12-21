@@ -14,6 +14,36 @@ import (
 
 const driverName = "rtorrent"
 
+// https://github.com/Novik/ruTorrent/blob/44d43229f07212f20b53b6301fb25882125876c3/plugins/httprpc/action.php#L90
+const (
+	DStop      rtorrent.Field = "d.stop"
+	DClose     rtorrent.Field = "d.close"
+	DStart     rtorrent.Field = "d.start"
+	DOpen      rtorrent.Field = "d.open"
+	DDownTotal rtorrent.Field = "d.down.total"
+	DDownRate  rtorrent.Field = "d.down.rate"
+	DUPTotal   rtorrent.Field = "d.up.total"
+	DUPRate    rtorrent.Field = "d.up.rate"
+	DUpTotal   rtorrent.Field = "d.get_up_total"
+	DSeeders   rtorrent.Field = "d.get_peers_complete"
+	DLeechers  rtorrent.Field = "d.get_peers_connected"
+	// States
+	DHashChecking rtorrent.Field = "d.is_hash_checking"
+	DPriority     rtorrent.Field = "d.get_priority"
+
+	DIsActive     rtorrent.Field = "d.is_active"
+	DFreeSpace    rtorrent.Field = "d.get_free_diskspace"
+	DCreationDate rtorrent.Field = "d.get_creation_date"
+	DState        rtorrent.Field = "d.get_state"
+	DMessage      rtorrent.Field = "d.get_message"
+
+	// Use custom1 for labels
+	DSetLabel rtorrent.Field = "d.set_custom1"
+	DGetLabel rtorrent.Field = "d.get_custom1"
+
+	DVerify rtorrent.Field = "d.check_hash"
+)
+
 type RTorrent struct {
 	cfg       client.Config
 	c         *rtorrent.RTorrent
@@ -66,36 +96,6 @@ func (d RTorrent) Stop(hash string) error {
 	log.Debugf("Stop() not implemented")
 	return nil
 }
-
-// https://github.com/Novik/ruTorrent/blob/44d43229f07212f20b53b6301fb25882125876c3/plugins/httprpc/action.php#L90
-const (
-	DStop      rtorrent.Field = "d.stop"
-	DClose     rtorrent.Field = "d.close"
-	DStart     rtorrent.Field = "d.start"
-	DOpen      rtorrent.Field = "d.open"
-	DDownTotal rtorrent.Field = "d.down.total"
-	DDownRate  rtorrent.Field = "d.down.rate"
-	DUPTotal   rtorrent.Field = "d.up.total"
-	DUPRate    rtorrent.Field = "d.up.rate"
-	DUpTotal   rtorrent.Field = "d.get_up_total"
-	DSeeders   rtorrent.Field = "d.get_peers_complete"
-	DLeechers  rtorrent.Field = "d.get_peers_connected"
-	// States
-	DHashChecking rtorrent.Field = "d.is_hash_checking"
-	DPriority     rtorrent.Field = "d.get_priority"
-
-	DIsActive     rtorrent.Field = "d.is_active"
-	DFreeSpace    rtorrent.Field = "d.get_free_diskspace"
-	DCreationDate rtorrent.Field = "d.get_creation_date"
-	DState        rtorrent.Field = "d.get_state"
-	DMessage      rtorrent.Field = "d.get_message"
-
-	// Use custom1 for labels
-	DSetLabel rtorrent.Field = "d.set_custom1"
-	DGetLabel rtorrent.Field = "d.get_custom1"
-
-	DVerify rtorrent.Field = "d.check_hash"
-)
 
 func (d RTorrent) GetTorrents(view rtorrent.View) ([]rtorrent.Torrent, error) {
 	args := []interface{}{"", string(view),
