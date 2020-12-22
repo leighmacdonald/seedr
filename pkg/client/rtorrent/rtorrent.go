@@ -45,9 +45,13 @@ const (
 )
 
 type RTorrent struct {
-	cfg       client.Config
+	cfg       *client.Config
 	c         *rtorrent.RTorrent
 	connected bool
+}
+
+func (d RTorrent) FreeSpace(path string) (int64, error) {
+	panic("implement me")
 }
 
 func (d RTorrent) Announce(hash string) error {
@@ -223,7 +227,7 @@ func (d RTorrent) Add(name string, torrent io.Reader, path string, label string)
 
 type Factory struct{}
 
-func (f Factory) New(cfg client.Config) (client.Driver, error) {
+func (f Factory) New(cfg *client.Config) (client.Driver, error) {
 	var url string
 	login := ""
 	if cfg.Username != "" && cfg.Password != "" {

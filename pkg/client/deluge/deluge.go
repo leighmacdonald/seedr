@@ -58,8 +58,12 @@ func getState(status *deluge.TorrentStatus) client.State {
 }
 
 type Deluge struct {
-	cfg    client.Config
+	cfg    *client.Config
 	client deluge.DelugeClient
+}
+
+func (d Deluge) FreeSpace(path string) (int64, error) {
+	return d.client.GetFreeSpace(path)
 }
 
 // TODO set label
@@ -190,18 +194,18 @@ func (d Deluge) Torrent(hash string, torrent *client.Torrent) error {
 
 }
 
-func statusToTorrents(states map[string]*deluge.TorrentStatus) ([]client.Torrent, error) {
-	var torrents []client.Torrent
+func statusToTorrents(states map[string]*deluge.TorrentStatus) ([]*client.Torrent, error) {
+	var torrents []*client.Torrent
 	for id, meta := range states {
 		var t client.Torrent
 		t.Hash = id
 		mapTorrentStatus(meta, &t)
-		torrents = append(torrents, t)
+		torrents = append(torrents, &t)
 	}
 	return torrents, nil
 }
 
-func (d Deluge) Torrents() ([]client.Torrent, error) {
+func (d Deluge) Torrents() ([]*client.Torrent, error) {
 	states, err := d.client.TorrentsStatus(deluge.StateUnspecified, nil)
 	if err != nil {
 		return nil, err
@@ -209,7 +213,7 @@ func (d Deluge) Torrents() ([]client.Torrent, error) {
 	return statusToTorrents(states)
 }
 
-func (d Deluge) TorrentsWithState(statuses ...client.State) ([]client.Torrent, error) {
+func (d Deluge) TorrentsWithState(statuses ...client.State) ([]*client.Torrent, error) {
 	torrents, err := d.client.TorrentsStatus(deluge.StateUnspecified, nil)
 	if err != nil {
 		return nil, err
@@ -237,7 +241,7 @@ func (d Deluge) Close() error {
 
 type Factory struct{}
 
-func (f Factory) New(cfg client.Config) (client.Driver, error) {
+func (f Factory) New(cfg *client.Config) (client.Driver, error) {
 	c := deluge.NewV2(deluge.Settings{
 		Hostname: cfg.Host,
 		Port:     uint(cfg.Port),

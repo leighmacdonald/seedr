@@ -1,7 +1,9 @@
 package client
 
 import (
+	"fmt"
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 	"io"
 	"sync"
 	"time"
@@ -48,6 +50,7 @@ type Driver interface {
 	Announce(hash string) error
 	ClientVersion() (string, error)
 	Close() error
+	FreeSpace(path string) (int64, error)
 	Login() error
 	Move(hash string, dest string) error
 	Pause(hash string) error
@@ -58,13 +61,13 @@ type Driver interface {
 	StartAll() error
 	Stop(hash string) error
 	Torrent(hash string, torrent *Torrent) error
-	Torrents() ([]Torrent, error)
-	TorrentsWithState(statuses ...State) ([]Torrent, error)
+	Torrents() ([]*Torrent, error)
+	TorrentsWithState(statuses ...State) ([]*Torrent, error)
 	Verify(hash string) error
 }
 
 type DriverFactory interface {
-	New(cfg Config) (Driver, error)
+	New(cfg *Config) (Driver, error)
 }
 
 type Config struct {
@@ -95,9 +98,14 @@ type Torrent struct {
 	Uploaded   int64
 	Downloaded int64
 	StatusMsg  string
+	State      State
 }
 
-func New(cfg Config) (Driver, error) {
+func (t *Torrent) Log() *log.Entry {
+	return log.WithFields(log.Fields{"name": t.Name, "ratio": fmt.Sprintf("%.2f", t.Ratio), "hash": t.Hash})
+}
+
+func New(cfg *Config) (Driver, error) {
 	driversMu.RLock()
 	defer driversMu.RUnlock()
 	factory, found := drivers[cfg.Driver]

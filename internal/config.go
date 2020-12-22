@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"github.com/dustin/go-humanize"
 	"github.com/leighmacdonald/seedr/pkg/client"
 	"github.com/mitchellh/go-homedir"
 	"github.com/pkg/errors"
@@ -11,29 +12,42 @@ import (
 )
 
 var (
-	config           configuration
+	config           *configuration
 	ErrInvalidConfig = errors.New("Invalid configuration")
 )
 
+type CheckOrder string
+
+const (
+	MinFree  CheckOrder = "min_free"
+	MaxRatio CheckOrder = "max_ratio"
+)
+
 type configuration struct {
-	General struct {
+	General *struct {
 		UpdateInterval string `mapstructure:"update_interval"`
 		StatInterval   string `mapstructure:"stat_interval"`
 		DryRunMode     bool   `mapstructure:"dry_run_mode"`
 	} `mapstructure:"general"`
-	Log struct {
+	Log *struct {
 		Level     string `mapstructure:"level"`
 		LogColour bool   `mapstructure:"log_colour"`
 	} `mapstructure:"log"`
-	Client client.Config `mapstructure:"client"`
-	Paths  []pathConfig  `mapstructure:"paths"`
+	Client *client.Config `mapstructure:"client"`
+	Checks *struct {
+		Order []CheckOrder   `mapstructure:"order"`
+		Paths []*checkConfig `mapstructure:"paths"`
+	} `mapstructure:"checks"`
 }
 
-type pathConfig struct {
-	Path     string  `mapstructure:"path"`
-	Priority int     `mapstructure:"priority"`
-	MaxUsed  float64 `mapstructure:"max_used"`
-	MaxRatio float64 `mapstructure:"max_ratio"`
+type checkConfig struct {
+	Path            string `mapstructure:"path"`
+	Priority        int    `mapstructure:"priority"`
+	MinFreeStr      string `mapstructure:"min_free"`
+	MinFree         int64
+	MinFreeEnabled  float64 `mapstructure:"min_free_enabled"`
+	MaxRatio        float64 `mapstructure:"max_ratio"`
+	MaxRatioEnabled float64 `mapstructure:"max_ratio_enabled"`
 }
 
 // Read reads in config file and ENV variables if set.
@@ -55,9 +69,16 @@ func ReadConfig(cfgFile string) error {
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
 		log.Debugf("Using config file: %s", viper.ConfigFileUsed())
-		newConfig := configuration{}
-		if err := viper.Unmarshal(&newConfig); err != nil {
+		newConfig := &configuration{}
+		if err := viper.Unmarshal(newConfig); err != nil {
 			return errors.Wrapf(err, "Failed to parse config")
+		}
+		for _, p := range newConfig.Checks.Paths {
+			s, err := humanize.ParseBytes(p.MinFreeStr)
+			if err != nil {
+				return errors.Wrapf(ErrInvalidConfig, "Invalid free space format: %v", err)
+			}
+			p.MinFree = int64(s)
 		}
 		config = newConfig
 
@@ -88,8 +109,8 @@ func configSanityCheck() {
 
 }
 
-func pathsByPriority() []pathConfig {
-	paths := config.Paths
+func checksByPriority() []*checkConfig {
+	paths := config.Checks.Paths
 	sort.Slice(paths, func(i, j int) bool {
 		return paths[i].Priority > paths[j].Priority
 	})

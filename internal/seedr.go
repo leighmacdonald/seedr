@@ -25,6 +25,8 @@ func torrentsToSlice(torrents map[string]client.Torrent) []client.Torrent {
 	return torrentSlice
 }
 
+//  Start is the main entry point of the application
+// Deluge cannot multiplex socket calls, must be serial
 func Start() {
 	cl, err := client.New(config.Client)
 	if err != nil {
@@ -35,19 +37,22 @@ func Start() {
 			log.Errorf("Failed to close connection: %v", err)
 		}
 	}()
+	if err := cl.Login(); err != nil {
+		log.Fatalf("Could not login to client: %v", err)
+	}
 	driver = cl
 
-	statInterval, err2 := time.ParseDuration(config.General.StatInterval)
-	if err2 != nil {
-		log.Fatalf("Invalid general.stat_interval: %v", err)
-	}
+	//statInterval, err2 := time.ParseDuration(config.General.StatInterval)
+	//if err2 != nil {
+	//	log.Fatalf("Invalid general.stat_interval: %v", err)
+	//}
 	updateInterval, err3 := time.ParseDuration(config.General.UpdateInterval)
 	if err3 != nil {
 		log.Fatalf("Invalid general.update_interval: %v", err)
 	}
 	ctx := context.Background()
 	go updateWorker(ctx, updateInterval)
-	go statWorker(ctx, statInterval)
+	//go statWorker(ctx, statInterval)
 	<-ctx.Done()
 }
 
@@ -72,13 +77,13 @@ func updateWorker(ctx context.Context, interval time.Duration) {
 	}
 }
 
-func getTorrentPathConfig(t *delugeclient.TorrentStatus) (pathConfig, bool) {
-	for _, c := range config.Paths {
+func getTorrentPathConfig(t *delugeclient.TorrentStatus) (*checkConfig, bool) {
+	for _, c := range config.Checks.Paths {
 		if strings.HasPrefix(t.DownloadLocation, c.Path) {
 			return c, true
 		}
 	}
-	return pathConfig{}, false
+	return nil, false
 }
 
 func statWorker(ctx context.Context, interval time.Duration) {

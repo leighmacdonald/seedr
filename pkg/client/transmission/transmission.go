@@ -27,8 +27,12 @@ var (
 )
 
 type Transmission struct {
-	cfg    client.Config
+	cfg    *client.Config
 	client *transmissionrpc.Client
+}
+
+func (d Transmission) FreeSpace(path string) (int64, error) {
+	panic("implement me")
 }
 
 func (d Transmission) Announce(hash string) error {
@@ -228,7 +232,7 @@ func (d Transmission) Add(filename string, torrent io.Reader, path string, _ str
 
 type Factory struct{}
 
-func (f Factory) New(cfg client.Config) (client.Driver, error) {
+func (f Factory) New(cfg *client.Config) (client.Driver, error) {
 	c, err := transmissionrpc.New(cfg.Host, cfg.Username, cfg.Password,
 		&transmissionrpc.AdvancedConfig{
 			HTTPS: cfg.TLS,

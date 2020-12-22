@@ -31,8 +31,12 @@ var (
 )
 
 type QBittorrent struct {
-	cfg client.Config
+	cfg *client.Config
 	qb  *qbittorrent.Client
+}
+
+func (driver QBittorrent) FreeSpace(path string) (int64, error) {
+	panic("implement me")
 }
 
 func (driver QBittorrent) Add(name string, torrent io.Reader, path string, label string) error {
@@ -210,7 +214,7 @@ func (driver QBittorrent) Torrents() ([]client.Torrent, error) {
 
 type Factory struct{}
 
-func (f Factory) New(cfg client.Config) (client.Driver, error) {
+func (f Factory) New(cfg *client.Config) (client.Driver, error) {
 	url := fmt.Sprintf("http://%s:%d", cfg.Host, cfg.Port)
 	c := qbittorrent.NewClient(url, log.WithField("component", "QBitTorrent Client"))
 	return QBittorrent{cfg: cfg, qb: c}, nil
